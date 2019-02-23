@@ -99,9 +99,14 @@ public class Snake : MonoBehaviour
             alive = false;
             return null;
         }
-        else
+        foreach (Node node in gameManager.listTail)
         {
-            return state[(int)position.x, (int)position.y];
+            if (node.position.x == position.x && node.position.y == position.y)
+            {
+                alive = false;
+                return null;
+            }
         }
+        return state[(int)position.x, (int)position.y];
     }
 }

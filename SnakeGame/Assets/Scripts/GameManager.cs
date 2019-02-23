@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public int size = 40;
     public float speedRate = 0.05f;
     public int score;
+    public bool hard;
     public GameObject background;
     public GameObject cam;
     public GameObject objectSnake;
@@ -171,6 +172,13 @@ public class GameManager : MonoBehaviour
             // Create new Food
             nodeFood = null;
             CreateFoodNode();
+
+            // Add Score
+            score++;
+            if (hard == true)
+            {
+                speedRate -= 0.01f;
+            }
         }
         else
         {
