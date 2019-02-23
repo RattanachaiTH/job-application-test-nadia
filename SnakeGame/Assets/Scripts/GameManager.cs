@@ -15,6 +15,9 @@ public class GameManager : MonoBehaviour
     public Node[,] state;
     public Node nodeSnake;
     public Node nodeFood;
+    public List<Node> listCreateFood;
+    public List<Node> listTail;
+    public List<GameObject> listTailObject;
     public Color colorSnake;
     public Color colorFood;
     public bool status;
@@ -47,6 +50,7 @@ public class GameManager : MonoBehaviour
     void FixedUpdate()
     {
         UpdateState();
+        print("Snake: " + nodeSnake.position + ", Food:" + nodeFood.position + ", Count: " + listCreateFood.Count);
     }
 
 
@@ -75,12 +79,15 @@ public class GameManager : MonoBehaviour
 
     void CreateState()
     {
+        listCreateFood = new List<Node>();
+        listTail = new List<Node>();
         state = new Node[size, size];
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)
             {
-                state[i, j] = new Node(Node.Type.None, new Vector2(i, j));
+                state[i, j] = new Node(new Vector2(i, j));
+                listCreateFood.Add(state[i, j]);
             }
         }
     }
@@ -90,8 +97,8 @@ public class GameManager : MonoBehaviour
         if (nodeSnake == null)
         {
             int index = (int)sizeHaft - 1;
-            state[index, index] = new Node(Node.Type.Head, new Vector2(index, index));
             nodeSnake = state[index, index];
+            listCreateFood.Remove(nodeSnake);
         }
     }
 
@@ -99,11 +106,16 @@ public class GameManager : MonoBehaviour
     {
         if (nodeFood == null)
         {
-            List<Node> listNone = CheckNoneNode();
-            int number = Random.Range(0, listNone.Count);
-            nodeFood = listNone[number];
-            nodeFood.type = Node.Type.Food;
+            int number = Random.Range(0, listCreateFood.Count);
+            nodeFood = listCreateFood[number];
+            listCreateFood.Remove(nodeFood);
         }
+    }
+    
+    void CreateTailNode(Node node)
+    {
+        listTail.Add(node);
+        CreateTailObject(node.position);
     }
 
     void CreateSnakeObject()
@@ -126,27 +138,44 @@ public class GameManager : MonoBehaviour
         Food food = objectSnake.AddComponent<Food>();
     }
 
-    List<Node> CheckNoneNode()
+    void CreateTailObject(Vector2 position)
     {
-        List<Node> listNone = new List<Node>();
-        for (int i = 0; i < size; i++)
-        {
-            for (int j = 0; j < size; j++)
-            {
-                if (state[i, j].type == Node.Type.None)
-                {
-                    listNone.Add(state[i, j]);
-                }
-            }
-        }
-        return listNone;
+        GameObject newTail = new GameObject("Tail_Object" + (listTail.Count + 1));
+        newTail.transform.parent = transform;
+        CreateColor(newTail, colorSnake);
+        newTail.transform.localScale = new Vector3(length, length, 1);
+        newTail.transform.position = position;
+        listTailObject.Add(newTail);
     }
 
-    public void UpdateSnake(Vector2 position, bool addTail)
+    public void UpdateSnake(Vector2 position, Node nextNode, bool addTail)
     {
-        Node tempNode = nodeSnake;
-        Vector2 tempPosition = nodeSnake.position;
-        nodeSnake.position = position;
+        objectSnake.transform.position = position;
+        Node tempN = nextNode;
+        Node tempC = nodeSnake;
+        listCreateFood.Remove(nextNode);
+        nodeSnake = nextNode;
+        for (int i = 0; i < listTail.Count; i++)
+        {
+            tempN = tempC;
+            tempC = listTail[i];
+            listTail[i] = tempN;
+            listTailObject[i].transform.position = listTail[i].position;
+        }
+
+        if (addTail == true)
+        {
+            // Create new Tail
+            CreateTailNode(tempC);
+
+            // Create new Food
+            nodeFood = null;
+            CreateFoodNode();
+        }
+        else
+        {
+            listCreateFood.Add(tempC);
+        }
     }
     
     public void UpdateState()

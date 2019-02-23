@@ -237,16 +237,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 329faf8e4ed8c7f4988901689c695283, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 40
+  size: 10
   speedRate: 0.1
   score: 0
   background: {fileID: 112196729}
   cam: {fileID: 2001516468}
   objectSnake: {fileID: 0}
   objectFood: {fileID: 0}
-  test: {fileID: 1523858549}
-  colorSnake: {r: 0, g: 0.7559283, b: 1, a: 0}
-  colorFood: {r: 1, g: 0, b: 0, a: 0}
+  listTailObject: []
+  colorSnake: {r: 0, g: 0.7559283, b: 1, a: 1}
+  colorFood: {r: 1, g: 0, b: 0, a: 1}
   status: 0
   spriteAsset: {fileID: 21300000, guid: fc4e30fccb134d34dbc0ca4e9d1125fb, type: 3}
 --- !u!1 &1523858549
@@ -266,7 +266,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1523858550
 Transform:
   m_ObjectHideFlags: 0
@@ -342,7 +342,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   position: {x: 0, y: 0, z: 0}
-  gameManamgerObj: {fileID: 1377838856}
+  gameManager: {fileID: 0}
 --- !u!1 &2001516468
 GameObject:
   m_ObjectHideFlags: 0

@@ -32,19 +32,21 @@ public class Snake : MonoBehaviour
     {
         if (gameManager.status == true)
         {
-            SetDirection();
-            Timer();
+            CheckDirection();
             if (move == true)
             {
-                direction = direction_temp;
-                position.x += direction.x;
-                position.y += direction.y;
-                CheckDead();
-
+                Node nextNode = CheckNextNode(gameManager.state);
                 if (alive)
                 {
-                    transform.position = position;
-                    gameManager.UpdateSnake(position, false);
+                    // Next node is Food
+                    if (nextNode == gameManager.nodeFood)
+                    {
+                        gameManager.UpdateSnake(position, nextNode, true);
+                    }
+                    else
+                    {
+                        gameManager.UpdateSnake(position, nextNode, false);
+                    }
                     move = false;
                 }
                 else
@@ -55,7 +57,7 @@ public class Snake : MonoBehaviour
         }
     }
 
-    void SetDirection()
+    void CheckDirection()
     {
         if ((Input.GetButton("Up")) && direction != down)
         {
@@ -73,6 +75,8 @@ public class Snake : MonoBehaviour
         {
             direction_temp = right;
         }
+
+        Timer();
     }
 
     void Timer()
@@ -85,11 +89,19 @@ public class Snake : MonoBehaviour
         }
     }
 
-    void CheckDead()
+    Node CheckNextNode(Node[,] state)
     {
+        direction = direction_temp;
+        position.x += direction.x;
+        position.y += direction.y;
         if (position.x < 0 || position.x >= gameManager.size || position.y < 0 || position.y >= gameManager.size)
         {
             alive = false;
+            return null;
+        }
+        else
+        {
+            return state[(int)position.x, (int)position.y];
         }
     }
 }
