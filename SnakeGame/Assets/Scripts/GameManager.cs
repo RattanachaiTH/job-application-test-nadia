@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     public GameObject cam;
     public GameObject objectSnake;
     public GameObject objectFood;
+    public GameObject objectTailStack;
     public Node[,] state;
     public Node nodeSnake;
     public Node nodeFood;
@@ -31,7 +32,7 @@ public class GameManager : MonoBehaviour
     private float sizeLength;
     private float sizeHaft;
 
-    public void Start()
+    public void Awake()
     {
         // initial value
         maxSize = 200;
@@ -39,7 +40,7 @@ public class GameManager : MonoBehaviour
         length = 100;
         score = 0;
 
-        // object setup
+        // Game setup
         CreateMap();
         CreateState();
         CreateSnakeNode();
@@ -48,12 +49,6 @@ public class GameManager : MonoBehaviour
         CreateFoodObject();
         status = true;
     }
-    void FixedUpdate()
-    {
-        UpdateState();
-        print("Snake: " + nodeSnake.position + ", Food:" + nodeFood.position + ", Count: " + listCreateFood.Count);
-    }
-
 
     void CreateMap()
     {
@@ -97,8 +92,9 @@ public class GameManager : MonoBehaviour
     {
         if (nodeSnake == null)
         {
-            int index = (int)sizeHaft - 1;
-            nodeSnake = state[index, index];
+            int index_x = (int)sizeHaft - 4;
+            int index_y = (int)sizeHaft;
+            nodeSnake = state[index_x, index_y];
             listCreateFood.Remove(nodeSnake);
         }
     }
@@ -122,9 +118,10 @@ public class GameManager : MonoBehaviour
     void CreateSnakeObject()
     {
         objectSnake = new GameObject("Snake_Object");
+        objectTailStack = new GameObject("Tail_Stack");
         objectSnake.transform.parent = transform;
+        objectTailStack.transform.parent = transform;
         CreateColor(objectSnake, colorSnake);
-        objectSnake.transform.localScale = new Vector3(length, length, 1);
         Snake snake = objectSnake.AddComponent<Snake>();
         snake.gameManager = transform.GetComponent<GameManager>();
         snake.position = nodeSnake.position;
@@ -135,14 +132,13 @@ public class GameManager : MonoBehaviour
         objectFood = new GameObject("Food_Object");
         objectFood.transform.parent = transform;
         CreateColor(objectFood, colorFood);
-        objectFood.transform.localScale = new Vector3(length, length, 1);
         Food food = objectSnake.AddComponent<Food>();
     }
 
     void CreateTailObject(Vector2 position)
     {
         GameObject newTail = new GameObject("Tail_Object" + (listTail.Count + 1));
-        newTail.transform.parent = transform;
+        newTail.transform.parent = objectTailStack.transform;
         CreateColor(newTail, colorSnake);
         newTail.transform.localScale = new Vector3(length, length, 1);
         newTail.transform.position = position;
@@ -151,23 +147,26 @@ public class GameManager : MonoBehaviour
 
     public void UpdateSnake(Vector2 position, Node nextNode, bool addTail)
     {
+        // Move SnakeHead
         objectSnake.transform.position = position;
-        Node tempN = nextNode;
-        Node tempC = nodeSnake;
+        Node tempNext = nextNode;
+        Node tempCurrent = nodeSnake;
         listCreateFood.Remove(nextNode);
         nodeSnake = nextNode;
+
+        // Move SnakeTail
         for (int i = 0; i < listTail.Count; i++)
         {
-            tempN = tempC;
-            tempC = listTail[i];
-            listTail[i] = tempN;
-            listTailObject[i].transform.position = listTail[i].position;
+            tempNext = tempCurrent;
+            tempCurrent = listTail[i];
+            listTail[i] = tempNext;
         }
 
+        //  When eat food
         if (addTail == true)
         {
             // Create new Tail
-            CreateTailNode(tempC);
+            CreateTailNode(tempCurrent);
 
             // Create new Food
             nodeFood = null;
@@ -182,24 +181,36 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            listCreateFood.Add(tempC);
+            // Add space at ended tail for Food
+            listCreateFood.Add(tempCurrent);
         }
+
+        // Update positions
+        UpdateState();
     }
     
     public void UpdateState()
     {
+        // Update SnakeHead and Food positions
         if (nodeFood != null && nodeSnake != null)
         {
             objectSnake.transform.position = nodeSnake.position;
             objectFood.transform.position = nodeFood.position;
         }
+        // Update Tail positions
+        for (int i = 0; i < listTail.Count; i++)
+        {
+            listTailObject[i].transform.position = listTail[i].position;
+        }
     }
 
     void CreateColor(GameObject obj, Color color)
     {
+        // Create block
         SpriteRenderer spriteRenderer = obj.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = spriteAsset;
         spriteRenderer.color = color;
+        obj.transform.localScale = new Vector3(length, length, 1);
     }
 
 }
