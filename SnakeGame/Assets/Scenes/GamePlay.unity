@@ -236,14 +236,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 329faf8e4ed8c7f4988901689c695283, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 40
+  size: 20
   speedRate: 0.1
   score: 0
-  hard: 1
+  hard: 0
   background: {fileID: 112196729}
   cam: {fileID: 2001516468}
   objectSnake: {fileID: 0}
   objectFood: {fileID: 0}
+  objectTailStack: {fileID: 0}
   listTailObject: []
   colorSnake: {r: 0, g: 0.7559283, b: 1, a: 1}
   colorFood: {r: 1, g: 0, b: 0, a: 1}
