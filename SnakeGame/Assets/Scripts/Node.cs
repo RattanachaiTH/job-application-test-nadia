@@ -4,17 +4,15 @@ using UnityEngine;
 
 public class Node
 {
-    // Public valiable
-    public Vector2 position;
-    public Node head;
-    public Node tail;
+    // Prepare for new feature
 
-    // Private valiable
-    private SpriteRenderer spriteRenderer;
+    // Public variable
+    public Vector2 position;
 
     // Constructor
     public Node(Vector2 position)
     {
         this.position = position;
     }
+    
 }

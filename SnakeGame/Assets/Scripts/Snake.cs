@@ -4,20 +4,19 @@ using UnityEngine;
 
 public class Snake : MonoBehaviour
 {
-    public Vector3 position;
     public GameManager gameManager;
-
+    
+    private Vector3 position;
     Vector2 direction;
     Vector2 direction_temp;
     Vector2 up, down, right, left;
     float timer;
     bool move;
     bool alive;
-
-    // Start is called before the first frame update
-    void Start()
+    
+    void Awake()
     {
-        //gameManager = gameManamgerObj.transform.GetComponent<GameManager>();
+        // Initial variable
         up = new Vector2(0, 1);
         down = new Vector2(0, -1);
         right = new Vector2(1, 0);
@@ -30,31 +29,37 @@ public class Snake : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (gameManager.status == true)
+        if (gameManager.GetStatus() == true)
         {
             CheckDirection();
             if (move == true)
             {
-                Node nextNode = CheckNextNode(gameManager.state);
+                Node nextNode = CheckNextNode(gameManager.GetState());
                 if (alive)
                 {
                     // Next node is Food
-                    if (nextNode == gameManager.nodeFood)
+                    if (nextNode == gameManager.GetFoodNode())
                     {
-                        gameManager.UpdateSnake(position, nextNode, true);
+                        gameManager.UpdateState(position, nextNode, true);
                     }
                     else
                     {
-                        gameManager.UpdateSnake(position, nextNode, false);
+                        gameManager.UpdateState(position, nextNode, false);
                     }
                     move = false;
                 }
                 else
                 {
-                    gameManager.status = false;
+                    gameManager.GameOver();
+                    gameManager.SetStatus(false);
                 }
             }
         }
+    }
+
+    public void SetPosition(Vector2 position)
+    {
+        this.position = position;
     }
 
     void CheckDirection()
@@ -82,7 +87,7 @@ public class Snake : MonoBehaviour
     void Timer()
     {
         timer += Time.deltaTime;
-        if (timer > gameManager.speedRate)
+        if (timer > GameManager.speedRate)
         {
             timer = 0;
             move = true;
@@ -94,12 +99,12 @@ public class Snake : MonoBehaviour
         direction = direction_temp;
         position.x += direction.x;
         position.y += direction.y;
-        if (position.x < 0 || position.x >= gameManager.size || position.y < 0 || position.y >= gameManager.size)
+        if (position.x < 0 || position.x >= GameManager.size || position.y < 0 || position.y >= GameManager.size)
         {
             alive = false;
             return null;
         }
-        foreach (Node node in gameManager.listTail)
+        foreach (Node node in gameManager.GetTailList())
         {
             if (node.position.x == position.x && node.position.y == position.y)
             {
