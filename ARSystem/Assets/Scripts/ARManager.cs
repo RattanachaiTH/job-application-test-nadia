@@ -4,180 +4,77 @@ using UnityEngine;
 
 public class ARManager : MonoBehaviour
 {
+    // Public valiable
     public GameObject target1;
     public GameObject target2;
+    public GameObject bin;
     public float swapTime;
 
-    private DefaultTrackableEventHandler handler1;
+    // Private valiable
+    private DefaultTrackableEventHandler handler1;    // Vuforia components
     private DefaultTrackableEventHandler handler2;
-    private GameObject sphere1;
-    private GameObject sphere2;
-    public  GameObject test;
     private bool tracked1;
     private bool tracked2;
     private bool swapWaiting;
-    private bool swaped;
     private float timeCount;
+    private float sphereScale;
+    private float sphereDistant;
     private int count;
-
+    
     void Awake()
     {
-        // Get Components
-        test = null;
+        // initial valiable
         handler1 = target1.transform.GetComponent<DefaultTrackableEventHandler>();
         handler2 = target2.transform.GetComponent<DefaultTrackableEventHandler>();
         swapWaiting = false;
-        swaped = false;
-        swapTime = 2f;
+        sphereScale = 15f;
+        sphereDistant = 5f;
         count = 0;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        UpdateTracking();
-        RemoveLost();
-        CheckTracked();
+        UpdateHandler();
+        CheckLost();
+        CheckFound();
         Swapping();
-        //print("target1: " + tracked1 + ", target2: " + tracked2 + ", swaped: " + swaped);
-        string s1 = "None";
-        string s2 = "None";
-        if (sphere1 != null)
-        {
-            s1 = sphere1.transform.name;
-        }
-        if (sphere2 != null)
-        {
-            s2 = sphere2.transform.name;
-        }
-        print("Sphere1: " + s1 + ", Sphere2: " + s2);
     }
 
-    void UpdateTracking()
+    // Get tracking value from Vuforia
+    void UpdateHandler()
     {
         tracked1 = handler1.tracked;
         tracked2 = handler2.tracked;
     }
 
-    void RemoveLost()
+    // Check Lost any tracked image and Move it to bin object
+    void CheckLost()
     {
-        if (tracked1 == true && tracked2 == false)
+        if (target1.transform.childCount != 0 && tracked1 == false)
         {
-            if (sphere2 != null)
-            {
-                Destroy(sphere2);
-                if (swaped == true)
-                {
-                    sphere1.transform.position = target1.transform.position;
-                    sphere1.transform.parent = target1.transform;
-                    EnableRenderer(sphere1);
-                }
-            }
-
-            swaped = false;
+            target1.transform.GetChild(0).parent = bin.transform;
         }
-        else if (tracked1 == false && tracked2 == true)
+        if (target2.transform.childCount != 0 && tracked2 == false)
         {
-            if (sphere1 != null)
-            {
-
-                Destroy(sphere1);
-                if (swaped == true)
-                {
-                    sphere2.transform.position = target2.transform.position;
-                    sphere2.transform.parent = target2.transform;
-                    EnableRenderer(sphere2);
-                }
-            }
-
-            swaped = false;
-        }
-        /*
-        if (tracked1 == true && tracked2 == false)
-        {
-            if (sphere2 != null)
-            {
-                Destroy(sphere2);
-                if (swaped == true)
-                {
-                    sphere1.transform.position = target1.transform.position;
-                    sphere1.transform.parent = target1.transform;
-                    EnableRenderer(sphere1);
-                }
-            }
-
-            swaped = false;
-        }
-        else if (tracked1 == false && tracked2 == true)
-        {
-            if (sphere1 != null)
-            {
-
-                Destroy(sphere1);
-                if (swaped == true)
-                {
-                    sphere2.transform.position = target2.transform.position;
-                    sphere2.transform.parent = target2.transform;
-                    EnableRenderer(sphere2);
-                }
-            }
-
-            swaped = false;
-        }
-        */
-        else if (tracked1 == false && tracked2 == false)
-        {
-            if (sphere1 != null)
-            {
-                Destroy(sphere1);
-            }
-            if (sphere2 != null)
-            {
-                Destroy(sphere2);
-            }
-            swaped = false;
+            target2.transform.GetChild(0).parent = bin.transform;
         }
     }
 
-    void CheckTracked()
+    // Check found any tracked image and create new sphere object
+    void CheckFound()
     {
-        /*
-        if (swaped == true)
+        if (target1.transform.childCount == 0 && tracked1 == true)
         {
-            if (sphere1 == null && tracked2 == true)
-            {
-                sphere1 = CreateSphere(target2);
-            }
-            if (sphere2 == null && tracked1 == true)
-            {
-                sphere2 = CreateSphere(target1);
-            }
+            CreateSphere(target1);
         }
-        else
+        if (target2.transform.childCount == 0 && tracked2 == true)
         {
-            if (sphere1 == null && tracked1 == true)
-            {
-                sphere1 = CreateSphere(target1);
-            }
-            if (sphere2 == null && tracked2 == true)
-            {
-                sphere2 = CreateSphere(target2);
-            }
+            CreateSphere(target2);
         }
-        */
-        
-        if (sphere1 == null && tracked1 == true)
-        {
-            sphere1 = CreateSphere(target1);
-        }
-        if (sphere2 == null && tracked2 == true)
-        {
-            sphere2 = CreateSphere(target2);
-        }
-        
-        
     }
 
+    // Swapping between two spheres after swapTime
     void Swapping()
     {
         if (tracked1 == true && tracked2 == true)
@@ -185,70 +82,51 @@ public class ARManager : MonoBehaviour
             if (swapWaiting == true)
             {
                 timeCount += Time.deltaTime;
+                // When swapTime pass
                 if (timeCount > swapTime)
                 {
-                    if (swaped == true)
-                    {
-                        sphere2.transform.position = target2.transform.position;
-                        sphere2.transform.parent = target2.transform;
-                        sphere1.transform.position = target1.transform.position;
-                        sphere1.transform.parent = target1.transform;
-                    }
-                    else
-                    {
-                        sphere1.transform.position = target2.transform.position;
-                        sphere1.transform.parent = target2.transform;
-                        sphere2.transform.position = target1.transform.position;
-                        sphere2.transform.parent = target1.transform;
-                    }
-                    swaped = Crossing(swaped);
-                    swapWaiting = false;
+                    target1.transform.GetChild(0).position = GetTargetPosition(target2);
+                    target1.transform.GetChild(0).parent = target2.transform;
+                    target2.transform.GetChild(0).position = GetTargetPosition(target1);
+                    target2.transform.GetChild(0).parent = target1.transform;
                     timeCount = 0f;
                 }
             }
             else
             {
+                // First time for tracking two spheres
                 swapWaiting = true;
                 timeCount = 0f;
             }
         }
         else
         {
+            // When lost some tracking
             swapWaiting = false;
             timeCount = 0f;
         }
     }
 
-    GameObject CreateSphere(GameObject target)
+    // Function for creating new sphere
+    void CreateSphere(GameObject target)
     {
         count++;
-        float scale = 15f;
         GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         sphere.transform.name = "Sphere" + count;
-        sphere.transform.localScale = new Vector3(scale, scale, scale);
-        sphere.transform.position = target.transform.position;
+        sphere.transform.localScale = new Vector3(sphereScale, sphereScale, sphereScale);
+        sphere.transform.position = GetTargetPosition(target);
         sphere.transform.parent = target.transform;
         sphere.GetComponent<Renderer>().material.shader = Shader.Find("Transparent/Diffuse");
         sphere.GetComponent<Renderer>().material.SetColor("_Color", Random.ColorHSV());
-        return sphere;
     }
 
-    bool Crossing(bool cossing)
+    // Function for setting a sphere position
+    Vector3 GetTargetPosition(GameObject target)
     {
-        if (cossing == true)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    void EnableRenderer(GameObject obj)
-    {
-        obj.transform.GetComponent<SphereCollider>().enabled = true;
-        obj.transform.GetComponent<MeshRenderer>().enabled = true;
-
+        float x = target.transform.position.x + (sphereDistant * target.transform.up.x);
+        float y = target.transform.position.y + (sphereDistant * target.transform.up.y);
+        float z = target.transform.position.z + (sphereDistant * target.transform.up.z);
+        Vector3 targetPosition = new Vector3(x, y, z);
+        return targetPosition;
     }
 }
