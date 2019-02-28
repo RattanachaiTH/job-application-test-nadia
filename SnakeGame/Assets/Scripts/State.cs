@@ -9,12 +9,12 @@ public class State
     public Type[,] state;
     public int size;
     public Vector2 direction;
-    public List<Vector2> tailStack;
+    public List<Vector2> tailList;
     public bool gameover;
     public bool eat;
 
     // Constructor
-    public State(int size, Vector2 head, Vector2 food, Vector2 direction, List<Vector2> tailStack)
+    public State(int size, Vector2 head, Vector2 food, Vector2 direction, List<Vector2> tailList)
     {
         // Initial variable
         gameover = false;
@@ -22,7 +22,7 @@ public class State
         state = new Type[size, size];
         this.size = size;
         this.direction = direction;
-        this.tailStack = new List<Vector2>();
+        this.tailList = new List<Vector2>();
 
         // fill Blank 
         for (int i = 0; i < size; i++)
@@ -30,17 +30,6 @@ public class State
             for (int j = 0; j < size; j++)
             {
                 state[i, j] = Type.BLANK;
-            }
-        }
-
-        // fill Tails
-        foreach (Vector2 tail in tailStack)
-        {
-            state[(int)tail.x, (int)tail.y] = Type.TAIL;
-            this.tailStack.Add(tail);
-            if (head == tail)
-            {
-                gameover = true;
             }
         }
         // fill Head and Food
@@ -53,9 +42,21 @@ public class State
         else
         {
             eat = false;
+            tailList.RemoveAt(tailList.Count - 1);
+        }
+        
+        // fill Tails
+        foreach (Vector2 tail in tailList)
+        {
+            state[(int)tail.x, (int)tail.y] = Type.TAIL;
+            tailList.Add(tail);
+            if (head == tail)
+            {
+                gameover = true;
+            }
         }
 
-        // Leave the field
+        // fill Head and check leave the field
         if ((int)head.x < 0 || (int)head.x >= GameManager.size || (int)head.y < 0 || (int)head.y >= GameManager.size)
         {
             gameover = false;
@@ -131,12 +132,26 @@ public class State
 
     public State GetNextState()
     {
-        
+        // Prepare variable
+        Vector2 head = GetHeadPosition();
+        Vector2 food = GetFoodPosition();
+        List<Vector2> tailList = CloneList(this.tailList);
+
+        // Process
+        head.x = direction.x;
+        head.y = direction.y;
+        tailList.Insert(0, head);
+        return new State(size, head, food, direction, tailList);
     }
 
-    public bool CheckGameover()
+    public List<Vector2> CloneList(List<Vector2> list)
     {
-
+        List<Vector2> clone = new List<Vector2>();
+        foreach ( Vector2 item in list)
+        {
+            clone.Add(item);
+        }
+        return clone;
     }
 
 

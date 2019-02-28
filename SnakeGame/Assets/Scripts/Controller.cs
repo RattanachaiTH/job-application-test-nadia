@@ -4,23 +4,29 @@ using UnityEngine;
 
 public abstract class Controller
 {
-    
-    public Vector2 currentDirection;
+    // Initial variable
+    public State state;
     public Vector2 input;
     public Vector2 up;
     public Vector2 down;
     public Vector2 left;
     public Vector2 right;
 
+    // Constructor
     public Controller()
     {
         up = new Vector2(0, 1);
         down = new Vector2(0, -1);
         right = new Vector2(1, 0);
         left = new Vector2(-1, 0);
-        
     }
+
+    // Get direction for next state
     public abstract Vector2 GetDirection();
-    public abstract Vector2 GetDicition();
+
+    // Calculate decision
+    public abstract Vector2 GetDecision();
+
+    // Get input from player
     public abstract void GetInput();
 }

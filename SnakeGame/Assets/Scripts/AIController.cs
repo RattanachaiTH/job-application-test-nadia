@@ -2,17 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIController : MonoBehaviour
+public class AIController : Controller
 {
-    // Start is called before the first frame update
-    void Start()
+    override public Vector2 GetDirection()
     {
-        
+        Vector2 decision = GetDecision();
+        return decision;
     }
 
-    // Update is called once per frame
-    void Update()
+    override public Vector2 GetDecision()
     {
-        
+        //-------------------
+        // AI DESISION PART (Future work)
+        //-------------------
+        return Vector2.zero;
+    }
+
+    override public void GetInput()
+    {
+        // AI no need to get input from player
     }
 }
