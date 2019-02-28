@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Snake : MonoBehaviour
 {
+    /*
     public GameManager gameManager;
     
     private Vector3 position;
@@ -114,4 +115,5 @@ public class Snake : MonoBehaviour
         }
         return state[(int)position.x, (int)position.y];
     }
+    */
 }

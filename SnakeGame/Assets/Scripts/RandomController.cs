@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class RandomController : Controller
 {
+    // Constructor
+    public RandomController(State state) : base(state)
+    {
+
+    }
+
     override public Vector2 GetDirection()
     {
         //Vector2 decision = GetDecision();

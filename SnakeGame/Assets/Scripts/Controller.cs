@@ -13,12 +13,18 @@ public abstract class Controller
     public Vector2 right;
 
     // Constructor
-    public Controller()
+    public Controller(State state)
     {
         up = new Vector2(0, 1);
         down = new Vector2(0, -1);
         right = new Vector2(1, 0);
         left = new Vector2(-1, 0);
+        this.state = state;
+    }
+
+    public void SetState(State state)
+    {
+        this.state = state;
     }
 
     // Get direction for next state

@@ -14,7 +14,7 @@ public class State
     public bool eat;
 
     // Constructor
-    public State(int size, Vector2 head, Vector2 food, Vector2 direction, List<Vector2> tailList)
+    public State(int size, Vector2 head, Vector2 food, Vector2 direction, List<Vector2> tailList, bool noFood)
     {
         // Initial variable
         gameover = false;
@@ -32,8 +32,11 @@ public class State
                 state[i, j] = Type.BLANK;
             }
         }
-        // fill Head and Food
-        state[(int)food.x, (int)food.y] = Type.FOOD;
+        // fill Food
+        if (noFood == false)
+        {
+            state[(int)food.x, (int)food.y] = Type.FOOD;
+        }
 
         if (head == food)
         {
@@ -42,14 +45,18 @@ public class State
         else
         {
             eat = false;
-            tailList.RemoveAt(tailList.Count - 1);
+            int length = tailList.Count;
+            if (length > 0)
+            {
+                tailList.RemoveAt(length - 1);
+            }
         }
         
         // fill Tails
         foreach (Vector2 tail in tailList)
         {
             state[(int)tail.x, (int)tail.y] = Type.TAIL;
-            tailList.Add(tail);
+            this.tailList.Add(tail);
             if (head == tail)
             {
                 gameover = true;
@@ -57,9 +64,9 @@ public class State
         }
 
         // fill Head and check leave the field
-        if ((int)head.x < 0 || (int)head.x >= GameManager.size || (int)head.y < 0 || (int)head.y >= GameManager.size)
+        if ((int)head.x < 0 || (int)head.x >= size || (int)head.y < 0 || (int)head.y >= size)
         {
-            gameover = false;
+            gameover = true;
         }
         else
         {
@@ -80,7 +87,7 @@ public class State
                 }
             }
         }
-        return Vector2.zero;
+        return new Vector2(-1, -1);
     }
 
     public Vector2 GetFoodPosition()
@@ -95,7 +102,7 @@ public class State
                 }
             }
         }
-        return Vector2.zero;
+        return new Vector2(-100, -100);
     }
     
     public List<Vector2> GetBlankPositionList()
@@ -138,10 +145,10 @@ public class State
         List<Vector2> tailList = CloneList(this.tailList);
 
         // Process
-        head.x = direction.x;
-        head.y = direction.y;
         tailList.Insert(0, head);
-        return new State(size, head, food, direction, tailList);
+        head.x += direction.x;
+        head.y += direction.y;
+        return new State(size, head, food, direction, tailList, false);
     }
 
     public List<Vector2> CloneList(List<Vector2> list)
@@ -152,6 +159,16 @@ public class State
             clone.Add(item);
         }
         return clone;
+    }
+
+    public void AddFood()
+    {
+        Vector2 old = GetFoodPosition();
+        List<Vector2> blankList = GetBlankPositionList();
+        int length = blankList.Count;
+        int random = Random.Range(0, length);
+        Vector2 newFood = blankList[random];
+        state[(int)newFood.x, (int)newFood.y] = Type.FOOD;
     }
 
 

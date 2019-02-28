@@ -202,7 +202,7 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Random
       m_Image: {fileID: 0}
-    - m_Text: AI
+    - m_Text: AI (Future work)
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:

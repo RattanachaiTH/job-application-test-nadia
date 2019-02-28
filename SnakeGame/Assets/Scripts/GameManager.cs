@@ -33,23 +33,79 @@ public class GameManager : MonoBehaviour
     private GameObject objectSnake;
     private GameObject objectFood;
     private GameObject objectTailStack;
+    private List<GameObject> listTailObject;
+    /*
     private Node[,] state;
     private Node nodeSnake;
     private Node nodeFood;
     private List<Node> listCreateFood;
     private List<Node> listTail;
-    private List<GameObject> listTailObject;
+    */
+    private State state;
     private bool status;
+    private Controller controller;
+
+    // move when speedRate pass
+    float timer;
+    bool move;
 
     public void Awake()
     {
         // initial value
+        print("speed: " + speedRate);
         maxSize = 200;
         minSize = 10;
         length = 100;
         status = false;
         uiStart.SetActive(true);
-        GameSetup();
+    }
+
+    public void FixedUpdate()
+    {
+        if (status == true)
+        {
+            controller.GetInput();
+            Timer();
+            if (move == true)
+            {
+                state.direction = controller.GetDirection();
+                print("Head1: " + state.GetHeadPosition());
+                print("Food1: " + state.GetFoodPosition());
+                State nextState = state.GetNextState();
+                print("Head2: "+ nextState.GetHeadPosition());
+                print("Food2: "+ nextState.GetFoodPosition());
+                // Game Over
+                if (nextState.gameover == true)
+                {
+                    print("game over");
+                    status = false;
+                    GameOver();
+                }
+                // Eat food
+                if (nextState.eat == true)
+                {
+                    score++;
+                    nextState.AddFood();
+                    CreateTailObject(nextState.tailList[nextState.tailList.Count - 1]);
+                }
+
+                // Update state
+                state = nextState;
+                controller.SetState(state);
+                UpdateObject();
+                move = false;
+            }
+        }
+    }
+
+    public void Timer()
+    {
+        timer += Time.deltaTime;
+        if (timer > speedRate)
+        {
+            timer = 0;
+            move = true;
+        }
     }
 
     void GameSetup()
@@ -58,10 +114,24 @@ public class GameManager : MonoBehaviour
         score = 0;
         CreateMap();
         CreateState();
-        CreateSnakeNode();
-        CreateFoodNode();
+        //CreateSnakeNode();
+        //CreateFoodNode();
         CreateSnakeObject();
         CreateFoodObject();
+        if (option == 0)    // Human
+        {
+            controller = new HumanController(state);
+            print("Human!!!!!!!!!!!!!!!!!!");
+        }
+        else if (option == 1)    // Random
+        {
+            controller = new RandomController(state);
+        }
+        else if (option == 2)    // AI (Future work)
+        {
+            controller = new AIController(state);
+        }
+        move = false;
     }
 
     void CreateMap()
@@ -88,65 +158,44 @@ public class GameManager : MonoBehaviour
 
     void CreateState()
     {
-        listCreateFood = new List<Node>();
-        listTail = new List<Node>();
-        listTailObject = new List<GameObject>();
-        state = new Node[size, size];
-        for (int i = 0; i < size; i++)
-        {
-            for (int j = 0; j < size; j++)
-            {
-                state[i, j] = new Node(new Vector2(i, j));
-                listCreateFood.Add(state[i, j]);
-            }
-        }
-    }
-    
-    void CreateSnakeNode()
-    {
-        int index_x = (int)sizeHaft - 4;
-        int index_y = (int)sizeHaft;
-        nodeSnake = state[index_x, index_y];
-        listCreateFood.Remove(nodeSnake);
-    }
-
-    void CreateFoodNode()
-    {
-        int random = Random.Range(0, listCreateFood.Count);
-        nodeFood = listCreateFood[random];
-        listCreateFood.Remove(nodeFood);
-    }
-    
-    void CreateTailNode(Node node)
-    {
-        listTail.Add(node);
-        CreateTailObject(node.position);
+        int start_x = (int)sizeHaft - 5;
+        int start_y = (int)sizeHaft;
+        Vector2 head = new Vector2(start_x, start_y);
+        Vector2 food = new Vector2(-1, -1);
+        Vector2 direction = new Vector2(1, 0);
+        List<Vector2> tailList = new List<Vector2>();
+        state = new State(size, head, food, direction, tailList, true);
+        state.AddFood();
     }
 
     void CreateSnakeObject()
     {
         objectSnake = new GameObject("Snake_Object");
         objectTailStack = new GameObject("Tail_Stack");
-        objectSnake.transform.position = new Vector3(-10f, -10f, 10f);
+        listTailObject = new List<GameObject>();
+        objectSnake.transform.position = state.GetHeadPosition();
         objectSnake.transform.parent = transform;
         objectTailStack.transform.parent = transform;
         CreateColor(objectSnake, colorSnake);
+        /*
         Snake snake = objectSnake.AddComponent<Snake>();
         snake.gameManager = transform.GetComponent<GameManager>();
-        snake.SetPosition(nodeSnake.position);
+        snake.SetPosition(state.GetHeadPosition());
+        */
     }
 
     void CreateFoodObject()
     {
         objectFood = new GameObject("Food_Object");
-        objectFood.transform.position = new Vector3(-10f, -10f, 10f);
+        objectFood.transform.position = state.GetFoodPosition();
         objectFood.transform.parent = transform;
         CreateColor(objectFood, colorFood);
     }
-
+    
     void CreateTailObject(Vector2 position)
     {
-        GameObject newTail = new GameObject("Tail_Object" + (listTail.Count + 1));
+        int tailLength = state.tailList.Count;
+        GameObject newTail = new GameObject("Tail_Object" + (tailLength));
         newTail.transform.parent = objectTailStack.transform;
         CreateColor(newTail, colorSnake);
         newTail.transform.localScale = new Vector3(length, length, 1);
@@ -155,23 +204,29 @@ public class GameManager : MonoBehaviour
     }
 
     // Function for updating Snake nodes
-    public void UpdateState(Vector2 position, Node nextNode, bool addTail)
+    public void UpdateObject()
     {
-        // Move SnakeHead
-        objectSnake.transform.position = position;
-        Node tempNext = nextNode;
-        Node tempCurrent = nodeSnake;
-        listCreateFood.Remove(nextNode);
-        nodeSnake = nextNode;
-
-        // Move SnakeTail
-        for (int i = 0; i < listTail.Count; i++)
+        if (state.gameover == false)
         {
-            tempNext = tempCurrent;
-            tempCurrent = listTail[i];
-            listTail[i] = tempNext;
+            // Update head object
+            objectSnake.transform.position = state.GetHeadPosition();
+
+            // Update food object
+            objectFood.transform.position = state.GetFoodPosition();
+
+            // Update tail objects
+            for (int i = 0; i < state.tailList.Count; i++)
+            {
+                listTailObject[i].transform.position = state.tailList[i];
+            }
+        }
+        else
+        {
+            // gameover = true;
         }
 
+        
+        /*
         //  When eat food
         if (addTail == true)
         {
@@ -194,6 +249,7 @@ public class GameManager : MonoBehaviour
             // Add space at ended tail for Food
             listCreateFood.Add(tempCurrent);
         }
+        
 
         // Update positions
         // Update SnakeHead and Food positions
@@ -207,6 +263,7 @@ public class GameManager : MonoBehaviour
         {
             listTailObject[i].transform.position = listTail[i].position;
         }
+        */
     }
 
     // Function for creating block
@@ -217,10 +274,12 @@ public class GameManager : MonoBehaviour
         spriteRenderer.color = color;
         obj.transform.localScale = new Vector3(length, length, 1);
     }
+
     #region UI_SECTION
     public void GameStart()
     {
         option = uiOption.GetComponent<TMP_Dropdown>().value;
+        GameSetup();
         status = true;
         uiStart.SetActive(false);
     }
@@ -254,31 +313,6 @@ public class GameManager : MonoBehaviour
 
     // Set and Get functions
     #region GET_SET_FUNCTION
-    public Node[,] GetState()
-    {
-        return state;
-    }
-
-    public Node GetSnakeNode()
-    {
-        return nodeSnake;
-    }
-
-    public Node GetFoodNode()
-    {
-        return nodeFood;
-    }
-
-    public List<Node> GetTailList()
-    {
-        return listTail;
-    }
-
-    public bool GetStatus()
-    {
-        return status;
-    }
-
     public void SetStatus(bool status)
     {
         this.status = status;
