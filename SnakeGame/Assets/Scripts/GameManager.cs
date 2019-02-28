@@ -220,6 +220,7 @@ public class GameManager : MonoBehaviour
     #region UI_SECTION
     public void GameStart()
     {
+        option = uiOption.GetComponent<TMP_Dropdown>().value;
         status = true;
         uiStart.SetActive(false);
     }
