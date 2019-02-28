@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,20 +10,24 @@ public class GameManager : MonoBehaviour
     public static int size = 40;
     public static float speedRate = 0.05f;
     public static int highScore = 0;
-    public int score;
     public bool hard;
     public GameObject background;
     public GameObject cam;
     public GameObject uiStart;
     public GameObject uiGameOver;
+    public GameObject uiScoreText;
+    public GameObject uiHighScoreText;
+    public GameObject uiOption;
     public Color colorSnake;
     public Color colorFood;
     public Sprite spriteAsset;
 
     // Private valiable
+    private int score;
     private int maxSize;
     private int minSize;
     private int length;
+    private int option;
     private float sizeLength;
     private float sizeHaft;
     private GameObject objectSnake;
@@ -42,7 +47,6 @@ public class GameManager : MonoBehaviour
         maxSize = 200;
         minSize = 10;
         length = 100;
-        score = 0;
         status = false;
         uiStart.SetActive(true);
         GameSetup();
@@ -51,6 +55,7 @@ public class GameManager : MonoBehaviour
     void GameSetup()
     {
         // Game setup
+        score = 0;
         CreateMap();
         CreateState();
         CreateSnakeNode();
@@ -225,6 +230,7 @@ public class GameManager : MonoBehaviour
         {
             highScore = score;
         }
+        UpdateScore();
         uiGameOver.SetActive(true);
     }
 
@@ -236,6 +242,12 @@ public class GameManager : MonoBehaviour
         GameSetup();
         status = true;
         uiGameOver.SetActive(false);
+    }
+
+    public void UpdateScore()
+    {
+        uiScoreText.GetComponent<TextMeshProUGUI>().SetText("Score: " + score);
+        uiHighScoreText.GetComponent<TextMeshProUGUI>().SetText("High score: " + highScore);
     }
     #endregion
 

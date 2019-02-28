@@ -82,9 +82,13 @@ public class FileManager : MonoBehaviour
         // When press "Enter"
         else if (selectPath == true)
         {
-            path = EditorUtility.OpenFolderPanel("Select new Path", path, "");
-            CaptureScreen();
-            currentImageFiles = ImageFilesSetFromPath(path);
+            string newPath = EditorUtility.OpenFolderPanel("Select new Path", path, "");
+            if (newPath != "")
+            {
+                path = newPath;
+                CaptureScreen();
+                currentImageFiles = ImageFilesSetFromPath(path);
+            }
             selectPath = false;
         }
     }
