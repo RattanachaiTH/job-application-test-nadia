@@ -7,7 +7,6 @@ public class AIController : Controller
     // Constructor
     public AIController(State state) : base(state)
     {
-
     }
 
     override public Vector2 GetDirection()
@@ -26,8 +25,8 @@ public class AIController : Controller
         Vector2 nextHead = nextState.GetHeadPosition();
         Vector2 nextFood = nextState.GetFoodPosition();
         Vector2 direction = state.direction;
-        float diff_x = nextHead.x - nextFood.x;
-        float diff_y = nextHead.y - nextFood.y;
+        float diff_x = head.x - food.x;
+        float diff_y = head.y - food.y;
         Vector2 best_x;
         Vector2 best_y;
         if (diff_x <= 0f)
@@ -97,7 +96,6 @@ public class AIController : Controller
                 }
             }
         }
-        //-------------------
     }
 
     override public void GetInput()

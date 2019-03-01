@@ -7,7 +7,6 @@ public class RandomController : Controller
     // Constructor
     public RandomController(State state) : base(state)
     {
-
     }
 
     override public Vector2 GetDirection()

@@ -32,12 +32,14 @@ public class State
                 state[i, j] = Type.BLANK;
             }
         }
+
         // fill Food
         if (noFood == false)
         {
             state[(int)food.x, (int)food.y] = Type.FOOD;
         }
 
+        // Check end food
         if (head == food)
         {
             eat = true;
@@ -74,7 +76,11 @@ public class State
         }
     }
 
+    // ----------------------------------
     // Method
+    //-----------------------------------
+
+    // Get head position in this state
     public Vector2 GetHeadPosition()
     {
         for (int i = 0; i < size; i++)
@@ -90,6 +96,7 @@ public class State
         return new Vector2(-1, -1);
     }
 
+    // Get food position in this state
     public Vector2 GetFoodPosition()
     {
         for (int i = 0; i < size; i++)
@@ -105,6 +112,7 @@ public class State
         return new Vector2(-100, -100);
     }
     
+    // Get Blank position list
     public List<Vector2> GetBlankPositionList()
     {
         List<Vector2> list = new List<Vector2>();
@@ -121,6 +129,7 @@ public class State
         return list;
     }
     
+    // Get Tail posionn list
     public List<Vector2> GetTailPositionList()
     {
         List<Vector2> list = new List<Vector2>();
@@ -137,6 +146,7 @@ public class State
         return list;
     }
 
+    // Calculate next state from current direction
     public State GetNextState()
     {
         // Prepare variable
@@ -151,6 +161,7 @@ public class State
         return new State(size, head, food, direction, tailList, false);
     }
 
+    // Create Clone list
     public List<Vector2> CloneList(List<Vector2> list)
     {
         List<Vector2> clone = new List<Vector2>();
@@ -161,6 +172,7 @@ public class State
         return clone;
     }
 
+    // Add new food to state
     public void AddFood()
     {
         Vector2 old = GetFoodPosition();
@@ -170,6 +182,5 @@ public class State
         Vector2 newFood = blankList[random];
         state[(int)newFood.x, (int)newFood.y] = Type.FOOD;
     }
-
 
 }

@@ -7,7 +7,6 @@ public class HumanController : Controller
     // Constructor
     public HumanController(State state) : base(state)
     {
-
     }
 
     override public Vector2 GetDirection()

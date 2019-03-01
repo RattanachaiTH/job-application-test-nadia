@@ -1,23 +1,29 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     // Public valiable
-    public static int size = 40;
-    public static float speedRate = 0.05f;
+    public static int size = 80;
+    public static float speedRate = 1f;
     public static int highScore = 0;
     public bool hard;
     public GameObject background;
     public GameObject cam;
     public GameObject uiStart;
     public GameObject uiGameOver;
+    public GameObject scoreText;
+    public GameObject highScoreText;
     public GameObject uiScoreText;
     public GameObject uiHighScoreText;
+    public GameObject uiOptionText;
     public GameObject uiOption;
+    public GameObject uiSizeScrollbar;
+    public GameObject uiSpeedScrollbar;
     public Color colorSnake;
     public Color colorFood;
     public Sprite spriteAsset;
@@ -30,29 +36,19 @@ public class GameManager : MonoBehaviour
     private int option;
     private float sizeLength;
     private float sizeHaft;
+    private float timer;
+    private bool move;
+    private bool status;
+    private State state;
     private GameObject objectSnake;
     private GameObject objectFood;
     private GameObject objectTailStack;
     private List<GameObject> listTailObject;
-    /*
-    private Node[,] state;
-    private Node nodeSnake;
-    private Node nodeFood;
-    private List<Node> listCreateFood;
-    private List<Node> listTail;
-    */
-    private State state;
-    private bool status;
     private Controller controller;
-
-    // move when speedRate pass
-    float timer;
-    bool move;
 
     public void Awake()
     {
         // initial value
-        print("speed: " + speedRate);
         maxSize = 200;
         minSize = 10;
         length = 100;
@@ -62,26 +58,23 @@ public class GameManager : MonoBehaviour
 
     public void FixedUpdate()
     {
+        // check status game
         if (status == true)
         {
+            // Waiting for next move
             controller.GetInput();
             Timer();
             if (move == true)
             {
                 state.direction = controller.GetDirection();
-                print("Head1: " + state.GetHeadPosition());
-                print("Food1: " + state.GetFoodPosition());
                 State nextState = state.GetNextState();
-                print("Head2: "+ nextState.GetHeadPosition());
-                print("Food2: "+ nextState.GetFoodPosition());
                 // Game Over
                 if (nextState.gameover == true)
                 {
-                    print("game over");
                     status = false;
                     GameOver();
                 }
-                // Eat food
+                // When get food
                 if (nextState.eat == true)
                 {
                     score++;
@@ -93,18 +86,9 @@ public class GameManager : MonoBehaviour
                 state = nextState;
                 controller.SetState(state);
                 UpdateObject();
+                UpdateScore();
                 move = false;
             }
-        }
-    }
-
-    public void Timer()
-    {
-        timer += Time.deltaTime;
-        if (timer > speedRate)
-        {
-            timer = 0;
-            move = true;
         }
     }
 
@@ -114,26 +98,40 @@ public class GameManager : MonoBehaviour
         score = 0;
         CreateMap();
         CreateState();
-        //CreateSnakeNode();
-        //CreateFoodNode();
-        CreateSnakeObject();
-        CreateFoodObject();
-        if (option == 0)    // Human
-        {
-            controller = new HumanController(state);
-            print("Human!!!!!!!!!!!!!!!!!!");
-        }
-        else if (option == 1)    // Random
-        {
-            controller = new RandomController(state);
-        }
-        else if (option == 2)    // AI (Future work)
-        {
-            controller = new AIController(state);
-        }
+        CreateObject();
+        controller = GetController();
+        UpdateScore();
+        scoreText.SetActive(true);
+        highScoreText.SetActive(true);
         move = false;
     }
 
+    // Get controller
+    Controller GetController()
+    {
+        Controller controller;
+        // Controller setting
+        if (option == 0)                                // Human
+        {
+            controller = new HumanController(state);
+        }
+        else if (option == 1)                           // Random
+        {
+            controller = new RandomController(state);
+        }
+        else if (option == 2)                           // AI (Future work)
+        {
+            controller = new AIController(state);
+        }
+        else
+        {
+            controller = new HumanController(state);
+        }
+
+        return controller;
+    }
+
+    // Set map follow size of arena
     void CreateMap()
     {
         if (size > maxSize)
@@ -156,6 +154,7 @@ public class GameManager : MonoBehaviour
         cam.transform.position = new Vector3(sizeHaft - 0.5f, sizeHaft - 0.5f, -10);
     }
 
+    // Create intial state for new game
     void CreateState()
     {
         int start_x = (int)sizeHaft - 5;
@@ -167,9 +166,11 @@ public class GameManager : MonoBehaviour
         state = new State(size, head, food, direction, tailList, true);
         state.AddFood();
     }
-
-    void CreateSnakeObject()
+    
+    // Create intial object in scene
+    void CreateObject()
     {
+        // Create snake object
         objectSnake = new GameObject("Snake_Object");
         objectTailStack = new GameObject("Tail_Stack");
         listTailObject = new List<GameObject>();
@@ -177,21 +178,15 @@ public class GameManager : MonoBehaviour
         objectSnake.transform.parent = transform;
         objectTailStack.transform.parent = transform;
         CreateColor(objectSnake, colorSnake);
-        /*
-        Snake snake = objectSnake.AddComponent<Snake>();
-        snake.gameManager = transform.GetComponent<GameManager>();
-        snake.SetPosition(state.GetHeadPosition());
-        */
-    }
 
-    void CreateFoodObject()
-    {
+        // Create food object
         objectFood = new GameObject("Food_Object");
         objectFood.transform.position = state.GetFoodPosition();
         objectFood.transform.parent = transform;
         CreateColor(objectFood, colorFood);
     }
     
+    // Create new tail object in scene
     void CreateTailObject(Vector2 position)
     {
         int tailLength = state.tailList.Count;
@@ -266,6 +261,17 @@ public class GameManager : MonoBehaviour
         */
     }
 
+    // Function for checking next move
+    public void Timer()
+    {
+        timer += Time.deltaTime;
+        if (timer > speedRate)
+        {
+            timer = 0;
+            move = true;
+        }
+    }
+
     // Function for creating block
     void CreateColor(GameObject obj, Color color)
     {
@@ -279,6 +285,10 @@ public class GameManager : MonoBehaviour
     public void GameStart()
     {
         option = uiOption.GetComponent<TMP_Dropdown>().value;
+        size = (int)(size * uiSizeScrollbar.GetComponent<Scrollbar>().value);
+        speedRate = 1 - (speedRate / 10) - uiSpeedScrollbar.GetComponent<Scrollbar>().value;
+        uiOption.transform.parent = uiGameOver.transform;
+        uiOptionText.transform.parent = uiGameOver.transform;
         GameSetup();
         status = true;
         uiStart.SetActive(false);
@@ -291,6 +301,8 @@ public class GameManager : MonoBehaviour
             highScore = score;
         }
         UpdateScore();
+        scoreText.SetActive(false);
+        highScoreText.SetActive(false);
         uiGameOver.SetActive(true);
     }
 
@@ -299,6 +311,7 @@ public class GameManager : MonoBehaviour
         Destroy(objectSnake);
         Destroy(objectFood);
         Destroy(objectTailStack);
+        option = uiOption.GetComponent<TMP_Dropdown>().value;
         GameSetup();
         status = true;
         uiGameOver.SetActive(false);
@@ -306,17 +319,11 @@ public class GameManager : MonoBehaviour
 
     public void UpdateScore()
     {
+        scoreText.GetComponent<TextMeshProUGUI>().SetText("Score: " + score);
+        highScoreText.GetComponent<TextMeshProUGUI>().SetText("High score: " + highScore);
         uiScoreText.GetComponent<TextMeshProUGUI>().SetText("Score: " + score);
         uiHighScoreText.GetComponent<TextMeshProUGUI>().SetText("High score: " + highScore);
     }
     #endregion
-
-    // Set and Get functions
-    #region GET_SET_FUNCTION
-    public void SetStatus(bool status)
-    {
-        this.status = status;
-    }
-
-    #endregion
+    
 }
