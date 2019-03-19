@@ -27,6 +27,18 @@ public abstract class Controller
         this.state = state;
     }
 
+    public List<Vector2> GetPosibleMoveList(State state)
+    {
+        List<Vector2> list = new List<Vector2>();
+        Vector2 stateDirection = state.direction;
+        list.Add(up);
+        list.Add(down);
+        list.Add(right);
+        list.Add(left);
+        list.Remove(stateDirection * new Vector2(-1, -1));
+        return list;
+    }
+
     // Get direction for next state
     public abstract Vector2 GetDirection();
 

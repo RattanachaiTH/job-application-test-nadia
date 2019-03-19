@@ -1,12 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class AIController : Controller
 {
+    private int maxDepth;
+    private int reward;
+    private int punish;
     // Constructor
     public AIController(State state) : base(state)
     {
+        maxDepth = 5;
+        reward = 100;
+        punish = -100;
     }
 
     override public Vector2 GetDirection()
@@ -18,17 +25,26 @@ public class AIController : Controller
     override public Vector2 GetDecision()
     {
         //-------------------
-        // AI DESISION PART (Future work)
-        State nextState = state.GetNextState();
+
+        return GetDirectionFromBest(state);
+        
+    }
+
+    override public void GetInput()
+    {
+        // AI no need to get input from player
+    }
+    
+    private Vector2[] GetBestInEachAxis(State state)
+    {
+        Vector2[] best = new Vector2[2];
         Vector2 head = state.GetHeadPosition();
         Vector2 food = state.GetFoodPosition();
-        Vector2 nextHead = nextState.GetHeadPosition();
-        Vector2 nextFood = nextState.GetFoodPosition();
-        Vector2 direction = state.direction;
-        float diff_x = head.x - food.x;
-        float diff_y = head.y - food.y;
         Vector2 best_x;
         Vector2 best_y;
+        float diff_x = head.x - food.x;
+        float diff_y = head.y - food.y;
+
         if (diff_x <= 0f)
         {
             best_x = right;
@@ -46,28 +62,41 @@ public class AIController : Controller
             best_y = down;
         }
 
+        best[0] = best_x;
+        best[1] = best_y;
+        return best;
+    }
+    
+    // Get Direction from best axis
+    private Vector2 GetDirectionFromBest(State state)
+    {
+        Vector2[] best = GetBestInEachAxis(state);
+        Vector2 head = state.GetHeadPosition();
+        Vector2 food = state.GetFoodPosition();
+        float diff_x = head.x - food.x;
+        float diff_y = head.y - food.y;
         if (diff_x > diff_y)
         {
             if (head.x < food.x)
             {
-                if (direction != left)
+                if (state.direction != left)
                 {
                     return right;
                 }
                 else
                 {
-                    return best_y;
+                    return best[1];
                 }
             }
             else
             {
-                if (direction != right)
+                if (state.direction != right)
                 {
                     return left;
                 }
                 else
                 {
-                    return best_y;
+                    return best[1];
                 }
             }
         }
@@ -75,32 +104,72 @@ public class AIController : Controller
         {
             if (head.y < food.y)
             {
-                if (direction != down)
+                if (state.direction != down)
                 {
                     return up;
                 }
                 else
                 {
-                    return best_x;
+                    return best[0];
                 }
             }
             else
             {
-                if (direction != up)
+                if (state.direction != up)
                 {
                     return down;
                 }
                 else
                 {
-                    return best_x;
+                    return best[0];
                 }
             }
         }
     }
-
-    override public void GetInput()
-    {
-        // AI no need to get input from player
-    }
     
+    private Vector2 GetDirectionFromAlphaValue()
+    {
+        List<Vector2> posibleDirection = GetPosibleMoveList(state);
+        Vector2 bestDirection = posibleDirection[0];
+        int maxValue = Int32.MinValue;
+        for (int i = 0; i < posibleDirection.Count; i++)
+        {
+            State subState = state.CloneState();
+            subState.direction = posibleDirection[i];
+            int value = GetAlphaValue(subState.GetNextState(), 0, 0);
+            Debug.Log("value " + i + ": " + value);
+            if (value > maxValue)
+            {
+                maxValue = value;
+                bestDirection = posibleDirection[i];
+            }
+        }
+        return Vector2.zero;
+    }
+    private int GetAlphaValue(State state, int alpha, int depth)
+    {
+        if (depth >= maxDepth)
+        {
+            return alpha;
+        }
+        List<Vector2> posibleDirection = GetPosibleMoveList(state);
+        int maxValue = Int32.MinValue;
+        for (int i = 0; i < posibleDirection.Count; i++)
+        {
+            State subState = state.CloneState();
+            subState.direction = posibleDirection[i];
+            int value = GetAlphaValue(subState.GetNextState(), 0, 0);
+            if (value > maxValue)
+            {
+                maxValue = value;
+            }
+        }
+        return -99;
+    }
+
+    private int GetReward(State state)
+    {
+
+        return 0;
+    }
 }

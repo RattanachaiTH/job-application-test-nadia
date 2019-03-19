@@ -172,6 +172,11 @@ public class State
         return clone;
     }
 
+    public State CloneState()
+    {
+        State cloneState = new State(size, GetHeadPosition(), GetFoodPosition(), direction, CloneList(tailList), false);
+        return cloneState;
+    }
     // Add new food to state
     public void AddFood()
     {
