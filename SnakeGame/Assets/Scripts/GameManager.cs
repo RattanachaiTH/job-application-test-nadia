@@ -163,7 +163,7 @@ public class GameManager : MonoBehaviour
         Vector2 food = new Vector2(-1, -1);
         Vector2 direction = new Vector2(1, 0);
         List<Vector2> tailList = new List<Vector2>();
-        state = new State(size, head, food, direction, tailList, true);
+        state = new State(size, head, food, direction, tailList, true, 0);
         state.AddFood();
     }
     

@@ -11,14 +11,16 @@ public class AIController : Controller
     // Constructor
     public AIController(State state) : base(state)
     {
-        maxDepth = 5;
+        maxDepth = 3;
         reward = 100;
-        punish = -100;
+        punish = Int32.MinValue;
     }
 
     override public Vector2 GetDirection()
     {
-        Vector2 decision = GetDecision();
+        //Vector2 decision = GetDecision();
+        Vector2 decision = GetDirectionFromAlphaValue();
+        //Debug.Log("Distance: " + GetDistance(state));
         return decision;
     }
 
@@ -126,7 +128,36 @@ public class AIController : Controller
             }
         }
     }
-    
+    private Vector2 AI1()
+    {
+        List<Vector2> posibleDirection = GetPosibleMoveList(state);
+        Vector2 bestDirection = posibleDirection[0];
+        int maxValue = Int32.MinValue;
+        for (int i = 0; i < posibleDirection.Count; i++)
+        {
+            State subState = state.CloneState();
+            subState.direction = posibleDirection[i];
+            subState = subState.GetNextState();
+            int value = 0;
+            Vector2 best = GetDirectionFromBest(subState);
+            if (posibleDirection[i] == best)
+            {
+                value += reward;
+            }
+            if (subState.gameover == true)
+            {
+                value += punish;
+            }
+            Debug.Log("value " + i + ": " + value);
+            if (value > maxValue)
+            {
+                maxValue = value;
+                bestDirection = posibleDirection[i];
+            }
+        }
+        return bestDirection;
+    }
+
     private Vector2 GetDirectionFromAlphaValue()
     {
         List<Vector2> posibleDirection = GetPosibleMoveList(state);
@@ -144,32 +175,48 @@ public class AIController : Controller
                 bestDirection = posibleDirection[i];
             }
         }
-        return Vector2.zero;
+        return bestDirection;
     }
+
     private int GetAlphaValue(State state, int alpha, int depth)
     {
-        if (depth >= maxDepth)
+        if (state.gameover == true)
+        {
+            return punish;
+        }
+        else if (depth >= maxDepth)
         {
             return alpha;
         }
+        else if (state.eat == true)
+        {
+            return reward;
+        }
+        if (state.direction == GetDirectionFromBest(state))
+        {
+            alpha += state.size / 2;
+        }
+        alpha += state.size - GetDistance(state);
         List<Vector2> posibleDirection = GetPosibleMoveList(state);
         int maxValue = Int32.MinValue;
         for (int i = 0; i < posibleDirection.Count; i++)
         {
             State subState = state.CloneState();
             subState.direction = posibleDirection[i];
-            int value = GetAlphaValue(subState.GetNextState(), 0, 0);
+            int value = GetAlphaValue(subState.GetNextState(), alpha, depth + 1);
             if (value > maxValue)
             {
                 maxValue = value;
             }
         }
-        return -99;
+        return alpha;
     }
 
-    private int GetReward(State state)
+    private int GetDistance(State state)
     {
-
-        return 0;
+        Vector2 head = state.GetHeadPosition();
+        Vector2 food = state.GetFoodPosition();
+        int distance = (int)Math.Sqrt(Math.Pow((food.x - head.x), 2) + Math.Pow((food.y - head.y), 2));
+        return distance;
     }
 }

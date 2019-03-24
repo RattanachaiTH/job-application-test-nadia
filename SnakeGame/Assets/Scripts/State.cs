@@ -12,9 +12,10 @@ public class State
     public List<Vector2> tailList;
     public bool gameover;
     public bool eat;
+    public int round;
 
     // Constructor
-    public State(int size, Vector2 head, Vector2 food, Vector2 direction, List<Vector2> tailList, bool noFood)
+    public State(int size, Vector2 head, Vector2 food, Vector2 direction, List<Vector2> tailList, bool noFood, int round)
     {
         // Initial variable
         gameover = false;
@@ -23,6 +24,7 @@ public class State
         this.size = size;
         this.direction = direction;
         this.tailList = new List<Vector2>();
+        this.round = round;
 
         // fill Blank 
         for (int i = 0; i < size; i++)
@@ -158,7 +160,7 @@ public class State
         tailList.Insert(0, head);
         head.x += direction.x;
         head.y += direction.y;
-        return new State(size, head, food, direction, tailList, false);
+        return new State(size, head, food, direction, tailList, false, round + 1);
     }
 
     // Create Clone list
@@ -174,7 +176,7 @@ public class State
 
     public State CloneState()
     {
-        State cloneState = new State(size, GetHeadPosition(), GetFoodPosition(), direction, CloneList(tailList), false);
+        State cloneState = new State(size, GetHeadPosition(), GetFoodPosition(), direction, CloneList(tailList), false, round);
         return cloneState;
     }
     // Add new food to state
